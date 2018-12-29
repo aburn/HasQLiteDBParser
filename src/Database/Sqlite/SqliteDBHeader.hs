@@ -13,9 +13,11 @@ import qualified Database.Sqlite.Utils as BState
 parseHeader :: B.ByteString -> (SqliteHeader, BState.BState)
 parseHeader bytes= State.runState parseHeaderWithState (BState.BState bytes)
 
--- TODO: missing error handling. 
--- use monad Transformers?? 
--- stack can be StateT with Either
+{--
+ -- TODO: missing error handling. 
+ -- use monad Transformers?? 
+ -- stack can be StateT with Either
+--} 
 parseHeaderWithState :: BState.BStateMonad SqliteHeader
 parseHeaderWithState = do
     hString <- BState.taken 16
@@ -54,6 +56,12 @@ parseHeaderWithState = do
         appId' reserved'
         versionValidFor' sqliteVersionNum'
 
+{--
+ -- TODO: is there a type that captures the length.
+ -- I'm using ByteString as the type for couple of fields below.
+ -- which will mean **of any length**. 
+ -- use something that will restrict length (by construction).
+--}
 data SqliteHeader = SqliteHeader 
     {
         magicString :: B.ByteString

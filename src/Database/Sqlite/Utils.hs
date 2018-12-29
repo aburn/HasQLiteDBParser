@@ -7,6 +7,7 @@ module Database.Sqlite.Utils
     ,   taken
     ,   fixEndian32
     ,   fixEndian16
+    ,   getWord8
     ) where
 
 import qualified Data.ByteString as B
@@ -27,6 +28,10 @@ taken n = do
     State.put (BState $ B.drop n curBytes)
     return (B.take n curBytes)
 
+{--
+ -- At somepoint make this conversion to host type, 
+ -- rather than assuming little endian for the host.
+--}
 fixEndian32 :: B.ByteString -> Word.Word32
 fixEndian32 (B.unpack -> [b1, b2, b3, b4]) = let
         a = (.|.) (fromIntegral b1 `shiftL` 24)  (fromIntegral b2 `shiftL` 16)
@@ -36,4 +41,7 @@ fixEndian32 (B.unpack -> [b1, b2, b3, b4]) = let
 fixEndian16 :: B.ByteString -> Word.Word16
 fixEndian16 (B.unpack -> [l', r']) = 
     (.|.) (fromIntegral l' `shiftL` 8)  (fromIntegral r')
+
+getWord8 :: B.ByteString -> Word.Word8
+getWord8 (B.unpack -> [b]) = b
 
