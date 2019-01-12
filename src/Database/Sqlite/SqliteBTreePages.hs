@@ -16,11 +16,12 @@ import Data.Tuple(swap)
 data SqliteBTreeLeafPage = SqliteBTreeLeafPage 
     {
         btreePageHeader :: SqliteBTreePageHeader
-    } deriving(Show)
+    ,   cellPointer :: [Word.Word16]
+    } deriving (Show)
 
 data SqliteBTreeInteriorPage = SqliteBTreeInteriorPage
         {
-        } deriving(Show)
+        } deriving (Show)
 
 data SqliteBTreeFirstPage = SqliteBTreeFirstPage
     {
@@ -32,7 +33,7 @@ data SqliteBTreePageType = InteriorIndex
         | InteriorTable
         | LeafIndex
         | LeafTable
-        deriving(Eq, Show)
+        deriving (Eq, Show)
 
 pageTypeMap :: [(Word.Word8, SqliteBTreePageType)]
 pageTypeMap = 
@@ -54,7 +55,7 @@ data SqliteBTreePageHeader = SqliteBTreePageHeader
     ,   startOfCellContent :: Word.Word16
     ,   fragmentedFreeBytes :: Word.Word16
     ,   rightMostPointer :: Maybe Word.Word32
-    } deriving(Eq, Show)
+    } deriving (Eq, Show)
 
 parseFirstPage :: Utils.BStateMonad SqliteBTreeFirstPage
 parseFirstPage = do
@@ -65,7 +66,7 @@ parseFirstPage = do
 parseBTreeLeafPageWithState :: Utils.BStateMonad SqliteBTreeLeafPage
 parseBTreeLeafPageWithState = do
     btreePageHeader' <- parseBTreePageHeader
-    return $ SqliteBTreeLeafPage btreePageHeader'
+    return $ SqliteBTreeLeafPage btreePageHeader' []
 
 parseBTreePageHeader :: Utils.BStateMonad SqliteBTreePageHeader
 parseBTreePageHeader = do

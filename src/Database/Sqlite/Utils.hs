@@ -5,6 +5,7 @@ module Database.Sqlite.Utils
         BState(..)
     ,   BStateMonad
     ,   taken
+    ,   peekn
     ,   fixEndian32
     ,   fixEndian16
     ,   getWord8
@@ -26,6 +27,12 @@ taken :: Int -> BStateMonad B.ByteString
 taken n = do
     BState curBytes <- State.get
     State.put (BState $ B.drop n curBytes)
+    return (B.take n curBytes)
+
+peekn :: Int -> BStateMonad B.ByteString
+peekn n = do
+    b@(BState curBytes) <- State.get
+    State.put b
     return (B.take n curBytes)
 
 {--
