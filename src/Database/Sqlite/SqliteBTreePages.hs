@@ -12,11 +12,12 @@ import qualified Database.Sqlite.Utils as Utils
 import qualified Data.Word as Word
 import Data.Maybe(fromJust)
 import Data.Tuple(swap)
+import Data.Bits
 
 data SqliteBTreeLeafPage = SqliteBTreeLeafPage 
     {
         btreePageHeader :: SqliteBTreePageHeader
-    ,   cellPointer :: [Word.Word16]
+    ,   cellPointers :: [Word.Word16]
     } deriving (Show)
 
 data SqliteBTreeInteriorPage = SqliteBTreeInteriorPage
@@ -66,7 +67,19 @@ parseFirstPage = do
 parseBTreeLeafPageWithState :: Utils.BStateMonad SqliteBTreeLeafPage
 parseBTreeLeafPageWithState = do
     btreePageHeader' <- parseBTreePageHeader
-    return $ SqliteBTreeLeafPage btreePageHeader' []
+    cellPointers' <- collectCellPointers btreePageHeader'
+    return $ SqliteBTreeLeafPage 
+        btreePageHeader' cellPointers'
+
+collectCellPointers :: SqliteBTreePageHeader -> Utils.BStateMonad [Word.Word16]
+collectCellPointers pageHeader = let numCells = numberOfCells pageHeader
+                                     numWords = fromIntegral (numCells * 2)
+                                 in do
+                                    cellPtrs <- map (\(x,y) -> (.|.) ((fromIntegral x::Word.Word16) `shiftL` 8)
+                                                                          (fromIntegral y :: Word.Word16))
+                                                    . Utils.pairAdjacent . Utils.getListOfWords <$> Utils.taken numWords
+                                    return cellPtrs
+
 
 parseBTreePageHeader :: Utils.BStateMonad SqliteBTreePageHeader
 parseBTreePageHeader = do

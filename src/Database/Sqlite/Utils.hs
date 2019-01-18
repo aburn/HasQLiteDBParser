@@ -9,6 +9,8 @@ module Database.Sqlite.Utils
     ,   fixEndian32
     ,   fixEndian16
     ,   getWord8
+    ,   pairAdjacent
+    ,   getListOfWords
     ) where
 
 import qualified Data.ByteString as B
@@ -51,4 +53,11 @@ fixEndian16 (B.unpack -> [l', r']) =
 
 getWord8 :: B.ByteString -> Word.Word8
 getWord8 (B.unpack -> [b]) = b
+
+pairAdjacent :: [a] -> [(a,a)]
+pairAdjacent (x:y:xs) = (x,y) : pairAdjacent xs
+pairAdjacent _        = []
+
+getListOfWords :: B.ByteString -> [Word.Word8]
+getListOfWords = B.unpack
 
