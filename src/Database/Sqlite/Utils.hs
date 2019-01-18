@@ -18,24 +18,31 @@ import qualified Control.Monad.State as State
 import qualified Data.Word as Word
 import Data.Bits
 
-newtype BState = BState
+data BState = BState
     {
         bytes :: B.ByteString
+    ,   pgOffset :: Int
     } deriving(Show, Eq)
 
 type BStateMonad a = State.State BState a
 
 taken :: Int -> BStateMonad B.ByteString
 taken n = do
-    BState curBytes <- State.get
-    State.put (BState $ B.drop n curBytes)
-    return (B.take n curBytes)
+    BState curBytes pageOffset <- State.get
+    State.put $ BState (B.drop n curBytes) pageOffset
+    return $ B.take n curBytes
 
 peekn :: Int -> BStateMonad B.ByteString
 peekn n = do
-    b@(BState curBytes) <- State.get
+    b@(BState curBytes _) <- State.get
     State.put b
     return (B.take n curBytes)
+
+getCurrentPageOffset :: BStateMonad Int
+getCurrentPageOffset = do
+    b@(BState _ pageOffset) <- State.get
+    State.put b
+    return pageOffset
 
 {--
  -- At somepoint make this conversion to host type, 

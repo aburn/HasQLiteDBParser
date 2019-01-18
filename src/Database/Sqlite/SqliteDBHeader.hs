@@ -1,7 +1,6 @@
 module Database.Sqlite.SqliteDBHeader
     (
-        parseHeader
-    ,   parseHeaderWithState
+        parseHeaderWithState
     ,   SqliteHeader(..)
     ) where
 
@@ -9,9 +8,6 @@ import qualified Data.ByteString as B
 import qualified Data.Word as Word
 import qualified Control.Monad.State as State
 import qualified Database.Sqlite.Utils as BState
-
-parseHeader :: B.ByteString -> (SqliteHeader, BState.BState)
-parseHeader bytes= State.runState parseHeaderWithState (BState.BState bytes)
 
 {--
  -- TODO: missing error handling. 

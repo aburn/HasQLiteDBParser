@@ -54,7 +54,7 @@ data SqliteBTreePageHeader = SqliteBTreePageHeader
     ,   firstFreeBlock :: Word.Word16
     ,   numberOfCells :: Word.Word16
     ,   startOfCellContent :: Word.Word16
-    ,   fragmentedFreeBytes :: Word.Word16
+    ,   fragmentedFreeBytes :: Word.Word8
     ,   rightMostPointer :: Maybe Word.Word32
     } deriving (Eq, Show)
 
@@ -74,12 +74,10 @@ parseBTreeLeafPageWithState = do
 collectCellPointers :: SqliteBTreePageHeader -> Utils.BStateMonad [Word.Word16]
 collectCellPointers pageHeader = let numCells = numberOfCells pageHeader
                                      numWords = fromIntegral (numCells * 2)
-                                 in do
-                                    cellPtrs <- map (\(x,y) -> (.|.) ((fromIntegral x::Word.Word16) `shiftL` 8)
+                                 in 
+                                    map (\(x,y) -> (.|.) ((fromIntegral x::Word.Word16) `shiftL` 8)
                                                                           (fromIntegral y :: Word.Word16))
                                                     . Utils.pairAdjacent . Utils.getListOfWords <$> Utils.taken numWords
-                                    return cellPtrs
-
 
 parseBTreePageHeader :: Utils.BStateMonad SqliteBTreePageHeader
 parseBTreePageHeader = do
@@ -87,7 +85,7 @@ parseBTreePageHeader = do
     firstFreeBlock' <- Utils.fixEndian16 <$> Utils.taken 2
     numberOfCells' <- Utils.fixEndian16 <$> Utils.taken 2
     startOfCellContent' <- Utils.fixEndian16 <$> Utils.taken 2
-    fragmentedFreeBytes' <- Utils.fixEndian16 <$> Utils.taken 2
+    fragmentedFreeBytes' <- Utils.getWord8 <$> Utils.taken 1
     if pageType' == InteriorIndex || pageType' == InteriorTable
     then do
         rightMostPointer' <- Utils.fixEndian32 <$> Utils.taken 4

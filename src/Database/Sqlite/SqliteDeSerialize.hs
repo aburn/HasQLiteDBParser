@@ -9,7 +9,7 @@ import qualified Control.Monad.State as State
 import qualified Database.Sqlite.SqliteBTreePages as SqliteBTreePages
 
 parse :: B.ByteString -> SqliteAst
-parse bytes = parse' (BState.BState bytes)
+parse bytes = parse' (BState.BState bytes 0)
 
 parse' :: BState.BState -> SqliteAst
 parse' = fst.State.runState parseWithState 
